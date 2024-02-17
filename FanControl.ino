@@ -30,11 +30,27 @@ void setup() {
   Serial.println("serial has begun!");
 } 
 
+void turnOn() {
+  //turn fan and LED on for 5 seconds
+    digitalWrite(LED_PIN, HIGH);
+    digitalWrite(motorPin, HIGH);
+    Serial.println("Fan is on!");
+    delay(50);
+}
+
+void turnOff() {
+  //turn off LED & fan when hand is not in required distance
+    digitalWrite(LED_PIN, LOW);
+    digitalWrite(motorPin, LOW);
+    delay(50);
+  Serial.println("Fan is off!");
+}
+
 void loop() {
   digitalWrite(ultraTrig, LOW);
-  delayMicroseconds(5);
+  delayMicroseconds(10);
   digitalWrite(ultraTrig, HIGH);
-  delayMicroseconds(20);
+  delayMicroseconds(10);
   digitalWrite(ultraTrig, LOW);
 
   //read ultrasonic values
@@ -49,27 +65,19 @@ void loop() {
   buttonState = digitalRead(bPin);
   //Serial.println(buttonState);
 
-
-  if (buttonState == 1) {
-     //stop fan
-    digitalWrite(motorPin, LOW);
-    //turn on LED
-    digitalWrite(LED_PIN, LOW);
-    Serial.println("Fan is off");
-    delay(50);
-  }
-  
   //check for distance between 30.48 = 12 inches
   //then turn on FAN and LED when hand is within required distance
-  if(distance >= 0 && distance <= 7.62) {
-    //turn fan and LED on for 5 seconds
-    digitalWrite(LED_PIN, HIGH);
-    digitalWrite(motorPin, HIGH);
-    delay(500);
-  } else {
-    //turn off LED & fan when hand is not in required distance
-    digitalWrite(LED_PIN, LOW);
-    digitalWrite(motorPin, LOW);
-    delay(500);
+  if (distance >= 0 && distance <= 7.62) {
+    if (buttonState == 1) {
+      turnOff();
+    }
+    else {
+      turnOn();
+    }
+  } 
+  else {
+    turnOff();
   }
+
+  
 }
