@@ -49,24 +49,16 @@ void loop() {
   buttonState = digitalRead(bPin);
   //Serial.println(buttonState);
 
-  // if (buttonState == 1) {
-  //       //let fan run for few seconds while on high
-  //   digitalWrite(motorPin, HIGH);
-  //   //turn on LED
-  //   digitalWrite(LED_PIN, HIGH);
-  //   Serial.println("Fan is on");
-  //   delay(50);
-  // }
-  // //if the tilt value read is high, turn fan on for 3 sec
-  // else if (buttonState == 0) {
-  //   //turn off FAN
-  //   //turn off LED
-  //   digitalWrite(LED_PIN, LOW);
-  //   digitalWrite(motorPin, LOW);
-  //   Serial.println("Fan is off");
-  //   delay(50);
-  //  }  
 
+  if (buttonState == 1) {
+     //stop fan
+    digitalWrite(motorPin, LOW);
+    //turn on LED
+    digitalWrite(LED_PIN, LOW);
+    Serial.println("Fan is off");
+    delay(50);
+  }
+  
   //check for distance between 30.48 = 12 inches
   //then turn on FAN and LED when hand is within required distance
   if(distance >= 0 && distance <= 7.62) {
