@@ -30,21 +30,29 @@ function draw() {
   textSize(20);
   text("Detecting...");
 
- // if(inRange) {
-    //draw check for fan on
-    stroke(0,255,0);
-    strokeWeight(5);
-    line(width/2 - 20, height/2 - 20, width/2 + 20, height/2 + 10);
-    line(width/2 + 20, height/2 + 10, width/2 + 100, height/2 - 60);
- // }
- //else {
-    //draw x for fan off
-  //  stroke(255, 0, 0);
-  //  strokeWeight(5);
-   // line(width/2 - 50, height/2 - 50, width/2 + 50, height/2 + 50);
-   // line(width/2 - 50, height/2 + 50, width/2 + 50, height/2 - 50);
- // }
+  if(inRange) {
+    drawCheck();
+  }
+  else {
+    drawX();
+  }
  
+ 
+}
+
+function drawCheck() {
+  //draw check for fan on
+  stroke(0,255,0);
+  strokeWeight(5);
+  line(width/2 - 20, height/2 - 20, width/2 + 20, height/2 + 10);
+  line(width/2 + 20, height/2 + 10, width/2 + 100, height/2 - 60);
+}
+function drawX() {
+  //draw x for fan off
+  stroke(255, 0, 0); 
+  strokeWeight(5);
+  line(width/2 - 50, height/2 - 50, width/2 + 50, height/2 + 50);
+  line(width/2 - 50, height/2 + 50, width/2 + 50, height/2 - 50); 
 }
 
 /**
@@ -115,16 +123,17 @@ function onSerialConnectionClosed(eventSender) {
 function onSerialDataReceived(eventSender, newData) {
   console.log("onSerialDataReceived", newData);
   pHtmlMsg.html("onSerialDataReceived: " + newData);
+
+  // Parse the incoming value as a int
+  let ultraDistance = parseInt(newData);
+  //check if distance is in range
+  if(ultraDistance >= 3 && ultraDistance <= 20){
+    inRange = true;
+  }
+  else {
+    inRange = false;
+  }
 }
-//   // Parse the incoming value as a int
-//   let ultraDistance = parseInt(newData);
-//   if(ultraDistance >= 3 && ultraDistance <= 20){
-//       inRange = true;
-//   }
-//   else {
-//     inRange = false;
-//   }
-// }
 
 /**
  * Called automatically by the browser through p5.js when mouse clicked
