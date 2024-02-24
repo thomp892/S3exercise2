@@ -55,6 +55,7 @@ function drawX() {
   line(width/2 - 50, height/2 + 50, width/2 + 50, height/2 - 50); 
 }
 
+//code below is copied for p5.js class lecture slides
 /**
  * Callback function by serial.js when there is an error on web serial
  * 
