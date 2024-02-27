@@ -24,7 +24,6 @@ void setup() {
   //start the serial
   //copied from lecture code
   Serial.begin(9600);
-  Serial.println("serial has begun");
 } 
 
 void turnOn() {
@@ -54,8 +53,8 @@ void loop() {
   duration = pulseIn(ultraEcho, HIGH);
   //convert duration to distance in centimeters
   distance = duration*0.034/2;
-  //Serial.print(distance);
-  //Serial.println("cm");
+ // Serial.print(distance);
+//  Serial.println("cm");
   delay(5);
 
    //read value from button switch
@@ -79,32 +78,14 @@ void loop() {
         delay(50);
       }
 
-
-
   //convert button and ultrasonic distance to Strings for serial
   String distStr = String(distance);
   String buttonStr = String(buttonState);
 
   //create string of data with distance and button state
-  String data = distStr + "," + buttonState + "\n";
-
-  //check if serial is ready to send data
-  if(Serial.available() > 0){
-    Serial.println("serial is available!");
-    //create string of data with distance and button state
-    String data = distStr + "," + buttonState + "\n";
-
-    //copied from documentation in lecture
-    int strLen = data.length() + 1;
-    Serial.println(data);
-    char dataArray[strLen];
-    //put each char in data into the array str_array
-    for(int i = strLen; i >= 0; i--) {
-      dataArray[i] = data[i];
-    }
-    //send the data to the serial to use for p5.js
-    Serial.write(dataArray, strLen);
-  }
+  String data = distStr + "," + buttonState;
+  //send data to the serial
+  Serial.println(data);
 }
 
 
