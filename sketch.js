@@ -1,8 +1,13 @@
+
 let pHtmlMsg;
 let serialOptions = { baudRate: 9600  };
 let serial;
 
+//boolean for in or out of distance range
 let inRange = false;
+//let lf = 10; //int variable for linefeed in ASCII
+let myData = "";
+let dataValues = [];
 
 function setup() {
   createCanvas(640, 480);
@@ -24,11 +29,11 @@ function setup() {
 
 function draw() {
   background(255,255,255);
-
   //loading
   stroke(0,0,0);
   textSize(20);
   text("Detecting...");
+
 
   if(inRange) {
     drawCheck();
@@ -36,8 +41,6 @@ function draw() {
   else {
     drawX();
   }
- 
- 
 }
 
 function drawCheck() {
@@ -54,6 +57,22 @@ function drawX() {
   line(width/2 - 50, height/2 - 50, width/2 + 50, height/2 + 50);
   line(width/2 - 50, height/2 + 50, width/2 + 50, height/2 - 50); 
 }
+
+// //turn system on
+// function turnOn(){
+//   if(serial.isOpen()){
+//     let strData = "HIGH";
+//     serial.writeLine(strData);
+//   }
+// }
+
+// //turn system off
+// function turnOff() {
+//   if(serial.isOpen()) {
+//     let strData = "LOW";
+//     serial.writeLine(strData);
+//   }
+// }
 
 //code below is copied for p5.js class lecture slides
 /**
@@ -125,23 +144,63 @@ function onSerialDataReceived(eventSender, newData) {
   console.log("onSerialDataReceived", newData);
   pHtmlMsg.html("onSerialDataReceived: " + newData);
 
+  //copied from lecture
   // Parse the incoming value as a int
-  let ultraDistance = parseInt(newData);
-  //check if distance is in range
-  if(ultraDistance >= 3 && ultraDistance <= 20){
-    inRange = true;
-  }
-  else {
-    inRange = false;
-  }
+  // let ultraDistance = parseInt(newData);
+  // console.log(ultraDistance);
+  // //check if distance is in range
+  // if(ultraDistance >= 0 && ultraDistance <= 7){
+  //   inRange = true;
+  //   console.log(inRange);
+  // }
+  // else {
+  //   inRange = false;
+  //   console.log(inRange);
+  // }
 }
 
 /**
  * Called automatically by the browser through p5.js when mouse clicked
  */
+//this function is copied from lecture notes, but lines 147 - 155 are modified
 function mouseClicked() {
   if (!serial.isOpen()) {
     serial.connectAndOpen(null, serialOptions);
   }
-}
 
+//NOTE: MAYBE MOVE THIS TO on serial data received??
+
+  //code below is modified from documentation in lecture
+  while(serial.isOpen() > 0) {
+    //read string from serial into variable until \n marker
+    myData = serial.readStringUntil('\n');
+
+    if (myString != null) {
+      console.log(myData);
+      myData.trim();
+      //split data by commas and add into dataValues array
+      dataValues.push(split(myData, ','));
+      console.log
+      //check that both distance and button values are in the array
+      if(dataValues.length == 2) {
+        console.log(dataValues[0]);
+        console.log(dataValues[1]);
+      }
+      //convert distance & button data into integers
+      let ultraDist = parseInt(dataValues[0].trim());
+      let buttonData = parseInt(dataValues[1].trim());
+      //check that data for each variable is correct
+      console.log(ultraDist + " | " + buttonData);
+  
+      //check if distance is in range
+      if(ultraDist >= 0 && ultraDist <= 7){
+        inRange = true;
+        console.log("Distance is in range!");
+      }
+      else {
+        inRange = false;
+        console.log("Distance is not in range");
+      }
+    }
+  }
+}
