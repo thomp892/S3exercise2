@@ -1,19 +1,22 @@
+//lines 1-5 copied from class lecture
 let pHtmlMsg;
 let serialOptions = { baudRate: 9600  };
 let serial;
 
-let r = 0;
-let g = 0;
-let b = 0;
+//boolean for in or out of distance range
+let inRange = false;
+//let lf = 10; //int variable for linefeed in ASCII
+let myData = "";
+let dataValues = [];
 
-let rippleSize = 0; // tracks the new ripple shape fraction off serial
-let preDistance = 0; // tracks the previous distance received from serial
-let preRippleSize = 0; //tracks the previous ripple size
-let monoSynth;
+let ultraDist;
+let buttonData;
+
 
 function setup() {
+  //code below under setup() is copied from class lecture
   createCanvas(640, 480);
-
+  background(0);
   // Setup Web Serial using serial.js
   serial = new Serial();
   serial.on(SerialEvents.CONNECTION_OPENED, onSerialConnectionOpened);
@@ -22,57 +25,21 @@ function setup() {
   serial.on(SerialEvents.ERROR_OCCURRED, onSerialErrorOccurred);
 
   // If we have previously approved ports, attempt to connect with them
-  serial.autoConnectAndOpenPreviouslyApprovedPort(serialOptions);
+  //serial.autoConnectAndOpenPreviouslyApprovedPort(serialOptions);
 
   // Add in a lil <p> element to provide messages. This is optional
   pHtmlMsg = createP("Click anywhere on this page to open the serial connection dialog");
 
-  // Set up the MonoSynth to start playing a note
-  monoSynth = new p5.MonoSynth();
 }
 
-function draw() {
-  background(0);
-
-  noStroke(); // turn off outline
-  fill(r,g,b);
-
-  let xCenter = width / 2;
-  let yCenter = height / 2;
-
-  if(rippleSize != 0 && rippleSize != preRippleSize){
-    circle(xCenter, yCenter, rippleSize);
-    playSynth(rippleSize);
-    preRippleSize = rippleSize;
-  }
-
-  fill(255);
-  const tSize = 14; // text size
-  const strInstructions = "Mouse click to change the ripple color";
-  textSize(tSize);
-  let tWidth = textWidth(strInstructions);
-  const xText = width / 2 - tWidth / 2;
-  text(strInstructions, xText, height - tSize - 10);
-}
-
-function playSynth(rippleSize){
-  userStartAudio();
-
-  let note = random(['F64', 'G4']);
-  let velocity = map(rippleSize, 50, height-10, 0, 1); // note velocity (volume, from 0 to 1)
-  let time = 0;
-  let dur = 1/10;
-
-  monoSynth.play(note, velocity, time, dur);
-}
-
-/**
+//code below is copied for p5.js class lecture slides
+ /**
  * Callback function by serial.js when there is an error on web serial
  * 
  * @param {} eventSender 
  */
-function onSerialErrorOccurred(eventSender, error) {
-  //console.log("onSerialErrorOccurred", error);
+ function onSerialErrorOccurred(eventSender, error) {
+  console.log("onSerialErrorOccurred", error);
   pHtmlMsg.html(error);
 }
 
@@ -82,7 +49,7 @@ function onSerialErrorOccurred(eventSender, error) {
  * @param {} eventSender 
  */
 function onSerialConnectionOpened(eventSender) {
-  //console.log("onSerialConnectionOpened");
+  console.log("onSerialConnectionOpened");
   pHtmlMsg.html("Serial connection opened successfully");
 }
 
@@ -92,7 +59,7 @@ function onSerialConnectionOpened(eventSender) {
  * @param {} eventSender 
  */
 function onSerialConnectionClosed(eventSender) {
-  //console.log("onSerialConnectionClosed");
+  console.log("onSerialConnectionClosed");
   pHtmlMsg.html("onSerialConnectionClosed");
 }
 
@@ -103,47 +70,66 @@ function onSerialConnectionClosed(eventSender) {
  * @param {String} newData new data received over serial
  */
 function onSerialDataReceived(eventSender, newData) {
-  //console.log("onSerialDataReceived", newData);
+  console.log("onSerialDataReceived", newData);
   pHtmlMsg.html("onSerialDataReceived: " + newData);
+   //code below is modified from documentation in lecture
 
-  // Parse the incoming value as a int
-  let ultraDistance = parseInt(newData);
-  if(ultraDistance >= 3 && ultraDistance <= 20){
-    if(preDistance == 0 ||  ultraDistance > (preDistance + 1) || ultraDistance < (preDistance - 1)){
-      console.log(ultraDistance);
-      rippleSize = int(map(ultraDistance, 3, 30, 50, height-10));
-      preDistance = ultraDistance;
+  console.log(newData);
+  //read string from serial into variable until \n marker
+    //split data by commas and add into dataValues array
+    dataValues = split(newData, ',');
+    console.log(dataValues);
+
+    //convert distance & button data into integers
+    ultraDist = parseInt(dataValues[0]);
+    buttonData = parseInt(dataValues[1]);
+    //check that data for each variable is correct
+    console.log(ultraDist + " | " + buttonData);
+
+    //check if distance is in range
+    if(ultraDist >= 0 && ultraDist <= 7){
+      inRange = true;
+      console.log("Distance is in range!");
     }
-    
-  }
-  else{
-    rippleSize = 0;
-  }
-  
+    else {
+      inRange = false;
+      console.log("Distance is not in range.");
+    }
 }
 
+//Function mouseClicked() - lines 101 - 110 are copied from class lecture examples
 /**
  * Called automatically by the browser through p5.js when mouse clicked
  */
+//this function is copied from lecture notes, but lines 147 - 155 are modified
 function mouseClicked() {
   if (!serial.isOpen()) {
     serial.connectAndOpen(null, serialOptions);
   }
-
-  r = int(random(0,256)); // pick a random value between 0 and 255
-  g = int(random(0,256)); // pick a random value between 0 and 255
-  b = int(random(0,256)); // pick a random value between 0 and 255
-
-  serialWriteLEDColor(r,g,b); // send the red, green, blue information to Arduino through serial
 }
 
-/**
- * Called automatically by the browser through p5.js when data sent to the serial
- */
-async function serialWriteLEDColor(red, green, blue){
-  if(serial.isOpen()){
-    let strData = red + "," + green + "," + blue;
-    console.log(strData);
-    serial.writeLine(strData);
+function draw() {
+  background(255,255,255);
+  if(inRange) {
+    drawCheck();
   }
+  else {
+    drawX();
+  }
+}
+
+function drawCheck() {
+  //draw check for fan on
+    stroke(0,255,0);
+    strokeWeight(5);
+    line(width/2 - 20, height/2 - 20, width/2 + 20, height/2 + 10);
+    line(width/2 + 20, height/2 + 10, width/2 + 100, height/2 - 60);
+}
+
+function drawX() {
+  //draw x for fan off
+  stroke(255, 0, 0); 
+  strokeWeight(5);
+  line(width/2 - 50, height/2 - 50, width/2 + 50, height/2 + 50);
+  line(width/2 - 50, height/2 + 50, width/2 + 50, height/2 - 50); 
 }
